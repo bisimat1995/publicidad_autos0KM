@@ -921,13 +921,22 @@ scalePieza();
 
 // ─── AJUSTAR SLOT AUTO AL ÁREA SOBRE EL PRECIO ───
 function ajustarCarSlot() {
-  const precioZona = document.getElementById('pieza-precio-zona');
-  const slot = document.getElementById('slot-auto');
-  if (!precioZona || !slot) return;
-  // offsetTop da la coordenada real dentro de la pieza (1080×1350 intocada por el scale)
-  const slotH = precioZona.offsetTop;
-  slot.style.height = slotH + 'px';
+  const precioZona  = document.getElementById('pieza-precio-zona');
+  const modeloEl    = document.getElementById('pieza-modelo');
+  const slot        = document.getElementById('slot-auto');
+  if (!precioZona || !slot || !modeloEl) return;
+
+  // Inicio del slot: justo debajo del texto del modelo
+  const slotTop    = modeloEl.offsetTop + modeloEl.offsetHeight;
+  // Fin del slot: donde arranca la zona del precio
+  const slotBottom = precioZona.offsetTop;
+  const slotH      = slotBottom - slotTop;
+
+  slot.style.top    = slotTop + 'px';
+  slot.style.height = slotH  + 'px';
+
   // Guardar para el export
+  slot.dataset.exportTop    = slotTop;
   slot.dataset.exportHeight = slotH;
 }
 
@@ -1130,18 +1139,19 @@ async function renderPiezaToCanvas() {
   if (carImgUrl) {
     // html2canvas NO soporta object-fit:contain — calculamos manualmente
     // las dimensiones exactas que produce contain+bottom dentro del slot.
-    const slotH = parseInt(slot.dataset.exportHeight) || slot.offsetTop || 930;
+    const slotTop = parseInt(slot.dataset.exportTop)    || 0;
+    const slotH   = parseInt(slot.dataset.exportHeight) || 930;
     await new Promise((resolve) => {
       const tmp = new Image();
       tmp.onload = () => {
         const CW = 1080, CH = slotH;
         const iw = tmp.naturalWidth, ih = tmp.naturalHeight;
-        // Escala contain: la más pequeña para que quepa entero en CW×CH
+        // Escala contain dentro del área del slot
         const scale = Math.min(CW / iw, CH / ih);
         const dw = iw * scale, dh = ih * scale;
-        // object-position 50% 100% → centrado horizontal, alineado al fondo
+        // Centrado horizontal, alineado al fondo del slot
         const left = (CW - dw) * 0.5;
-        const top  = (CH - dh) * 1.0; // 100% = fondo del slot
+        const top  = slotTop + (CH - dh); // fondo del slot
         exportImg.style.position = 'absolute';
         exportImg.style.left   = left + 'px';
         exportImg.style.top    = top  + 'px';
