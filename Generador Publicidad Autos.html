@@ -830,7 +830,7 @@
           <div class="logo-marca">
             <div class="logo-circulo" id="logo-circulo">
               <svg id="svg-logo" viewBox="0 0 44 44" fill="none"></svg>
-              <img id="img-logo" src="" style="display:none; width:150px; height:150px; object-fit:contain;">
+              <img id="img-logo" src="" style="display:none; max-width:150px; max-height:150px; width:auto; height:auto;">
             </div>
             <div class="divisor-v"></div>
             <div class="nombre-concesionaria" id="txt-concesionaria">NOALE</div>
@@ -987,10 +987,12 @@ function update() {
     svgLogo.style.display = 'none';
     imgLogo.src = brandImgUrl;
     imgLogo.style.display = 'block';
-    imgLogo.style.width  = '150px';
-    imgLogo.style.height = '150px';
-    logoCirculo.style.width  = '150px';
-    logoCirculo.style.height = '150px';
+    imgLogo.style.width     = 'auto';
+    imgLogo.style.height    = 'auto';
+    imgLogo.style.maxWidth  = '150px';
+    imgLogo.style.maxHeight = '150px';
+    logoCirculo.style.width  = 'auto';
+    logoCirculo.style.height = 'auto';
     logoCirculo.style.border = 'none';
     logoCirculo.style.background = 'transparent';
   } else {
