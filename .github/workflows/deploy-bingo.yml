@@ -3,7 +3,7 @@ name: Deploy Bingo Musical a GitHub Pages
 on:
   push:
     branches:
-      - claude/birthday-music-bingo-app-b7ev7d
+      - main
     paths:
       - bingo-musical.html
       - .github/workflows/deploy-bingo.yml
