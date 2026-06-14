@@ -80,6 +80,12 @@
     background:linear-gradient(90deg,var(--accent),var(--gold),var(--accent2));
     -webkit-background-clip:text;background-clip:text;color:transparent}
   .cardhead .id{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:2px}
+  .code-big{font-family:'Bebas Neue';font-size:72px;letter-spacing:8px;text-align:center;
+    margin:6px 0 14px;line-height:1;
+    background:linear-gradient(90deg,var(--gold),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .salabadge{display:inline-block;background:var(--card);border:1px solid var(--line);
+    color:var(--gold);font-weight:800;border-radius:8px;padding:2px 10px;letter-spacing:3px;font-size:13px}
   .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
   .cell{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;
     background:var(--card2);border:1px solid var(--line);aspect-ratio:1/1;
@@ -183,21 +189,43 @@
       <div class="party" id="partyName">la fiesta</div>
     </div>
     <div class="home-actions">
-      <button class="bigbtn play" id="goPlay">
-        <span class="emoji">🎟️</span>
-        <span>Soy jugador/a<small>Tocá para tener tu cartón</small></span>
-      </button>
-      <button class="bigbtn host" id="goHost">
+      <button class="bigbtn host" id="goCreate">
         <span class="emoji">🎤</span>
-        <span>Soy el/la anfitrión/a<small>Reproducir las canciones</small></span>
+        <span>Crear sala (anfitrión)<small>Armás la sala y ponés la música</small></span>
+      </button>
+      <button class="bigbtn play" id="goJoin">
+        <span class="emoji">🎟️</span>
+        <span>Entrar a una sala (jugador)<small>Con el código o el link de la sala</small></span>
       </button>
     </div>
     <div class="home-note">
-      Cada teléfono genera su propio cartón.<br>
-      El anfitrión va poniendo canciones al azar y cada quien marca las que tiene.<br>
+      El anfitrión crea una sala y comparte el código/QR.<br>
+      Cada invitado entra y juega con su propio cartón.<br>
       ¡Línea o cartón lleno = <b style="color:var(--gold)">BINGO!</b>
     </div>
     <button class="btn block ghost" id="shareHome" style="margin-top:18px">📲 Invitar / compartir link</button>
+  </section>
+
+  <!-- ===== LOBBY (sala del anfitrión) ===== -->
+  <section id="lobby" class="hidden">
+    <div class="barback">
+      <button class="btn ghost" id="lobbyBack">‹ Volver</button>
+      <div class="spacer"></div>
+      <button class="btn" id="lobbyNew">🔁 Otra sala</button>
+    </div>
+    <div class="cardhead">
+      <div class="t">SALA CREADA</div>
+      <div class="id">Compartí este código con los invitados</div>
+    </div>
+    <div class="code-big" id="lobbyCode">----</div>
+    <div class="qr" id="lobbyQr" style="margin:0 auto 14px"></div>
+    <div class="linkbox" style="max-width:380px;margin:0 auto 12px">
+      <input type="text" id="lobbyLink" readonly>
+      <button class="btn cyan" id="lobbyCopy">Copiar</button>
+    </div>
+    <button class="btn accent block" id="lobbyShare" style="margin-bottom:14px">📲 Compartir link / QR</button>
+    <button class="btn gold block" id="lobbyStart">▶ Empezar a jugar</button>
+    <div class="tip">Cuando estén todos adentro, tocá <b>Empezar</b> para ir a poner la música.<br>Los invitados pueden seguir entrando con el mismo código.</div>
   </section>
 
   <!-- ===== PLAYER ===== -->
@@ -209,7 +237,7 @@
     </div>
     <div class="cardhead">
       <div class="t">MI CARTÓN</div>
-      <div class="id" id="cardId">#----</div>
+      <div class="id"><span class="salabadge" id="cardSala" style="display:none">SALA ----</span> <span id="cardId">#----</span></div>
     </div>
     <div class="grid" id="grid"></div>
     <div class="counter">Marcadas <b id="markCount">0</b> / 16</div>
@@ -278,6 +306,21 @@
     </div>
     <button class="btn gold block" id="saveName" style="margin-bottom:8px">Guardar</button>
     <button class="btn ghost block" id="closeSet">Cancelar</button>
+  </div>
+</div>
+
+<!-- ===== JOIN MODAL (entrar con codigo) ===== -->
+<div class="modal hidden" id="joinModal">
+  <div class="sheet">
+    <h2>🎟️ Entrar a una sala</h2>
+    <p>Escribí el código que te pasó el anfitrión.</p>
+    <div class="field">
+      <label>Código de la sala</label>
+      <input type="text" id="joinInput" placeholder="Ej: K7P2" maxlength="8" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:4px;text-align:center;font-size:22px;font-weight:800">
+    </div>
+    <button class="btn gold block" id="joinGo" style="margin-bottom:8px">Entrar</button>
+    <button class="btn ghost block" id="joinSolo" style="margin-bottom:8px">Jugar sin sala (cartón suelto)</button>
+    <button class="btn ghost block" id="joinClose">Cancelar</button>
   </div>
 </div>
 
@@ -413,25 +456,40 @@ function setName(n){
 function renderName(){document.getElementById("partyName").textContent=getName();}
 
 /* ---------- NAVEGACIÓN ---------- */
-const views={home:"home",player:"player",host:"host"};
 function show(view){
-  ["home","player","host"].forEach(v=>{
+  ["home","lobby","player","host"].forEach(v=>{
     document.getElementById(v).classList.toggle("hidden",v!==view);
   });
   window.scrollTo(0,0);
 }
 
+/* ---------- SESIÓN / SALA ---------- */
+const CODE_ALPHABET="ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sin O/0/I/1
+function getSession(){const s=getParams().get("s");return s?s.toUpperCase():"";}
+function setSession(code){setParams({s:code||null});}
+function newSessionCode(){
+  let c="";
+  for(let i=0;i<4;i++)c+=CODE_ALPHABET[Math.floor(Math.random()*CODE_ALPHABET.length)];
+  return c;
+}
+
 /* ============================================================
    JUGADOR · CARTÓN
    ============================================================ */
-let cardSeed=null, cardSongs=[], marked=[];
+let cardSeed=null, cardSongs=[], marked=[], marksKey="";
 
-function ensureSeed(){
-  let s=getParams().get("seed");
-  if(!s){
-    s=Math.floor(Math.random()*1e9).toString(36);
-    setParams({seed:s});
-  }
+function ensurePlayerSeed(){
+  // Cartón estable por teléfono, distinto en cada sala
+  const code=getSession();
+  const key="seed:"+(code||"solo");
+  let s=localStorage.getItem(key);
+  if(!s){s=Math.floor(Math.random()*1e9).toString(36);localStorage.setItem(key,s);}
+  return s;
+}
+function newPlayerSeed(){
+  const code=getSession();
+  const s=Math.floor(Math.random()*1e9).toString(36);
+  localStorage.setItem("seed:"+(code||"solo"),s);
   return s;
 }
 function seedToInt(str){
@@ -441,15 +499,20 @@ function seedToInt(str){
 }
 function buildCard(seedStr){
   cardSeed=seedStr;
+  const code=getSession();
+  marksKey="marks:"+(code||"solo")+":"+seedStr;
   const rnd=mulberry32(seedToInt(seedStr));
   cardSongs=seededShuffle(SONGS,rnd).slice(0,CARD_SIZE);
-  // marcas guardadas por seed
-  const saved=localStorage.getItem("marks:"+seedStr);
+  // marcas guardadas por sala + cartón
+  const saved=localStorage.getItem(marksKey);
   marked=saved?JSON.parse(saved):new Array(CARD_SIZE).fill(false);
+  const sala=document.getElementById("cardSala");
+  if(code){sala.style.display="inline-block";sala.textContent="SALA "+code;}
+  else{sala.style.display="none";}
   document.getElementById("cardId").textContent="#"+seedStr.toUpperCase();
   renderGrid();
 }
-function saveMarks(){localStorage.setItem("marks:"+cardSeed,JSON.stringify(marked));}
+function saveMarks(){localStorage.setItem(marksKey,JSON.stringify(marked));}
 function renderGrid(){
   const grid=document.getElementById("grid");
   grid.innerHTML="";
@@ -515,11 +578,12 @@ function fireConfetti(){
    ============================================================ */
 let hostOrder=[], hostIdx=-1, hostSeed=null;
 
-function buildHostOrder(seedStr){
-  hostSeed=seedStr;
-  const rnd=mulberry32(seedToInt(seedStr));
+function buildHostOrder(code){
+  hostSeed=code||"FIESTA";
+  const salt=localStorage.getItem("horder:"+hostSeed)||"0";
+  const rnd=mulberry32(seedToInt(hostSeed+":"+salt));
   hostOrder=seededShuffle(SONGS,rnd);
-  const savedIdx=localStorage.getItem("hostIdx:"+seedStr);
+  const savedIdx=localStorage.getItem("hostIdx:"+hostSeed);
   hostIdx=savedIdx?parseInt(savedIdx,10):-1;
   renderHost();
 }
@@ -527,8 +591,9 @@ function saveHostIdx(){localStorage.setItem("hostIdx:"+hostSeed,String(hostIdx))
 function renderHost(){
   const total=hostOrder.length;
   const cur=hostIdx>=0?hostOrder[hostIdx]:null;
+  const scode=getSession();
   document.getElementById("hostProgress").textContent=
-    "CANCIÓN "+(hostIdx+1)+" / "+total;
+    (scode?("SALA "+scode+" · "):"")+"CANCIÓN "+(hostIdx+1)+" / "+total;
   const cover=document.getElementById("hostCover");
   if(cur){
     document.getElementById("hostSong").textContent=cur.t;
@@ -575,22 +640,60 @@ function hostPlayCurrent(where){
 function baseUrl(){
   return location.origin+location.pathname;
 }
-function shareUrl(){
+function shareUrl(opts){
+  opts=opts||{};
   const p=new URLSearchParams();
   const n=getName();
   if(n&&n!=="la fiesta")p.set("name",n);
+  const code=opts.session||getSession();
+  if(code)p.set("s",code);
+  if(opts.role)p.set("role",opts.role);
   const h=p.toString();
   return baseUrl()+(h?("#"+h):"");
 }
-function openShare(){
-  const url=shareUrl();
-  document.getElementById("shareLink").value=url;
-  const qr=document.getElementById("qrBox");
+function makeQr(boxId,url){
+  const qr=document.getElementById(boxId);
   qr.innerHTML="";
   const img=new Image();
-  img.onerror=()=>{qr.innerHTML='<div style="color:#333;font-size:12px;padding:10px;text-align:center">Copiá el link de abajo 👇</div>';};
+  img.onerror=()=>{qr.innerHTML='<div style="color:#333;font-size:12px;padding:10px;text-align:center">Copiá el link 👇</div>';};
   img.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data="+encodeURIComponent(url);
   qr.appendChild(img);
+}
+
+/* ---------- LOBBY (sala del anfitrión) ---------- */
+function createSession(){
+  let code=getSession();
+  if(!code){code=newSessionCode();setSession(code);}
+  renderLobby();
+  show("lobby");
+}
+function renderLobby(){
+  const code=getSession();
+  document.getElementById("lobbyCode").textContent=code;
+  const url=shareUrl({role:"play"});
+  document.getElementById("lobbyLink").value=url;
+  makeQr("lobbyQr",url);
+}
+function startHosting(){
+  const code=getSession()||"FIESTA";
+  setSession(code);
+  setParams({role:"host"});
+  buildHostOrder(code);
+  show("host");
+}
+
+/* ---------- ENTRAR (jugador) ---------- */
+function joinSession(code){
+  if(code)setSession(code.toUpperCase());
+  setParams({role:"play"});
+  buildCard(ensurePlayerSeed());
+  show("player");
+}
+function openShare(){
+  // Si hay sala, el link invita como jugador a esa sala
+  const url=getSession()?shareUrl({role:"play"}):shareUrl();
+  document.getElementById("shareLink").value=url;
+  makeQr("qrBox",url);
   document.getElementById("shareModal").classList.remove("hidden");
 }
 
@@ -601,20 +704,44 @@ document.addEventListener("DOMContentLoaded",()=>{
   renderName();
 
   // Home
-  document.getElementById("goPlay").addEventListener("click",()=>{
-    const s=ensureSeed();setParams({role:"play"});buildCard(s);show("player");
+  document.getElementById("goCreate").addEventListener("click",createSession);
+  document.getElementById("goJoin").addEventListener("click",()=>{
+    const code=getSession();
+    if(code){joinSession(code);}
+    else{
+      document.getElementById("joinInput").value="";
+      document.getElementById("joinModal").classList.remove("hidden");
+    }
   });
-  document.getElementById("goHost").addEventListener("click",()=>{
-    let s=getParams().get("hseed");
-    if(!s){s="fiesta";setParams({hseed:s});}
-    setParams({role:"host"});buildHostOrder(s);show("host");
+
+  // Lobby
+  document.getElementById("lobbyBack").addEventListener("click",()=>{setParams({role:null});show("home");});
+  document.getElementById("lobbyNew").addEventListener("click",()=>{setSession(newSessionCode());renderLobby();});
+  document.getElementById("lobbyStart").addEventListener("click",startHosting);
+  document.getElementById("lobbyShare").addEventListener("click",openShare);
+  document.getElementById("lobbyCopy").addEventListener("click",()=>{
+    const inp=document.getElementById("lobbyLink");inp.select();
+    navigator.clipboard?.writeText(inp.value);
+    const b=document.getElementById("lobbyCopy");b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar",1500);
   });
+
+  // Join modal
+  document.getElementById("joinGo").addEventListener("click",()=>{
+    const v=document.getElementById("joinInput").value.trim().toUpperCase();
+    if(!v)return;
+    document.getElementById("joinModal").classList.add("hidden");
+    joinSession(v);
+  });
+  document.getElementById("joinSolo").addEventListener("click",()=>{
+    document.getElementById("joinModal").classList.add("hidden");
+    setSession(null);joinSession("");
+  });
+  document.getElementById("joinClose").addEventListener("click",()=>document.getElementById("joinModal").classList.add("hidden"));
 
   // Player
   document.getElementById("playerBack").addEventListener("click",()=>{setParams({role:null});show("home");});
   document.getElementById("newCard").addEventListener("click",()=>{
-    const s=Math.floor(Math.random()*1e9).toString(36);
-    setParams({seed:s});buildCard(s);
+    buildCard(newPlayerSeed());
   });
   document.getElementById("clearMarks").addEventListener("click",()=>{
     marked=new Array(CARD_SIZE).fill(false);saveMarks();renderGrid();
@@ -632,8 +759,10 @@ document.addEventListener("DOMContentLoaded",()=>{
   document.getElementById("hostPlay").addEventListener("click",()=>hostPlayCurrent("youtube"));
   document.getElementById("hostSpotify").addEventListener("click",()=>hostPlayCurrent("spotify"));
   document.getElementById("reshuffle").addEventListener("click",()=>{
-    const s=Math.floor(Math.random()*1e9).toString(36);
-    setParams({hseed:s});buildHostOrder(s);
+    const code=getSession()||"FIESTA";
+    localStorage.setItem("horder:"+code,Date.now().toString(36));
+    localStorage.removeItem("hostIdx:"+code);
+    buildHostOrder(code);
   });
 
   // Share
@@ -646,8 +775,10 @@ document.addEventListener("DOMContentLoaded",()=>{
     const b=document.getElementById("copyLink");b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar",1500);
   });
   document.getElementById("shareNative").addEventListener("click",()=>{
-    const url=shareUrl();
-    if(navigator.share)navigator.share({title:"Bingo Musical 🎸",text:"¡Sumate al Bingo Musical de "+getName()+"!",url});
+    const url=getSession()?shareUrl({role:"play"}):shareUrl();
+    const code=getSession();
+    const text="¡Sumate al Bingo Musical de "+getName()+"!"+(code?(" Sala: "+code):"");
+    if(navigator.share)navigator.share({title:"Bingo Musical 🎸",text,url});
     else openShare();
   });
 
@@ -668,8 +799,9 @@ document.addEventListener("DOMContentLoaded",()=>{
 
   // Restaurar vista según hash (link compartido)
   const role=getParams().get("role");
-  if(role==="play"){buildCard(ensureSeed());show("player");}
-  else if(role==="host"){let s=getParams().get("hseed")||"fiesta";buildHostOrder(s);show("host");}
+  if(role==="play"){buildCard(ensurePlayerSeed());show("player");}
+  else if(role==="host"){buildHostOrder(getSession()||"FIESTA");show("host");}
+  else if(getSession()){joinSession(getSession());} // link con código → entra como jugador
   else show("home");
 });
 </script>
