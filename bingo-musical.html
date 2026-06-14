@@ -561,12 +561,20 @@ function hostPrev(){
   if(hostIdx>0){hostIdx--;saveHostIdx();renderHost();}
   else if(hostIdx===0){hostIdx=-1;saveHostIdx();renderHost();}
 }
+function openExternal(url){
+  // Apertura confiable tambien dentro de navegadores de apps (WhatsApp/IG)
+  const a=document.createElement("a");
+  a.href=url;a.target="_blank";a.rel="noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>a.remove(),0);
+}
 function hostPlayCurrent(where){
   if(hostIdx<0)hostNext();
   const cur=hostOrder[hostIdx];
   if(!cur)return;
   const url=(where==="spotify")?spotifySearchUrl(cur):ytSearchUrl(cur);
-  window.open(url,"_blank","noopener");
+  openExternal(url);
 }
 
 /* ============================================================
