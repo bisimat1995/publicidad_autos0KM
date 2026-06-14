@@ -1,0 +1,53 @@
+name: Deploy Bingo Musical a GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/birthday-music-bingo-app-b7ev7d
+    paths:
+      - bingo-musical.html
+      - .github/workflows/deploy-bingo.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar (y habilitar) GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Preparar sitio (el bingo es la pagina de inicio)
+        run: |
+          mkdir -p _site
+          cp bingo-musical.html _site/index.html
+          cp bingo-musical.html _site/bingo-musical.html
+
+      - name: Subir artefacto
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Desplegar a GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
