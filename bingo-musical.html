@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0a1f">
+<title>Bingo Musical 🎸 Rock & Roll</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0e0a1f; --bg2:#1a1033; --card:#1d1640; --card2:#241a52;
+    --accent:#ff2e63; --accent2:#08d9d6; --gold:#ffd23f; --txt:#f4f1ff;
+    --muted:#a99fd6; --good:#3ddc84; --line:rgba(255,255,255,.10);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Outfit',system-ui,Arial,sans-serif;
+    color:var(--txt);
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(255,46,99,.25), transparent 60%),
+      radial-gradient(1000px 600px at 110% 10%, rgba(8,217,214,.20), transparent 55%),
+      linear-gradient(160deg, var(--bg), var(--bg2));
+    background-attachment:fixed;
+    min-height:100vh;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:18px 16px 90px}
+  h1,h2,h3{font-family:'Bebas Neue',sans-serif;letter-spacing:1px;margin:0;line-height:.95}
+  .hidden{display:none!important}
+
+  /* ---------- HEADER ---------- */
+  .top{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .brand{font-family:'Bebas Neue';font-size:30px;letter-spacing:1.5px;
+    background:linear-gradient(90deg,var(--accent),var(--gold),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;line-height:1}
+  .brand small{display:block;font-family:'Outfit';font-size:11px;letter-spacing:3px;
+    color:var(--muted);font-weight:700;-webkit-text-fill-color:var(--muted)}
+  .iconbtn{margin-left:auto;background:var(--card);border:1px solid var(--line);
+    color:var(--txt);width:42px;height:42px;border-radius:12px;font-size:18px;cursor:pointer}
+  .iconbtn:active{transform:scale(.94)}
+
+  /* ---------- HERO / HOME ---------- */
+  .hero{text-align:center;padding:8px 0 4px}
+  .hero .big{font-size:64px;line-height:.9;margin:6px 0}
+  .hero .sub{color:var(--muted);font-weight:600;margin:2px 0 4px}
+  .party{font-size:46px;line-height:1;margin:10px 0 2px;
+    background:linear-gradient(90deg,var(--gold),var(--accent));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .home-actions{display:grid;gap:14px;margin-top:22px}
+  .bigbtn{border:none;border-radius:18px;padding:20px 18px;cursor:pointer;text-align:left;
+    display:flex;align-items:center;gap:14px;color:#120a22;font-weight:800;font-size:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35)}
+  .bigbtn .emoji{font-size:30px}
+  .bigbtn small{display:block;font-weight:600;font-size:13px;opacity:.8}
+  .bigbtn.play{background:linear-gradient(120deg,#ff2e63,#ff6b9d)}
+  .bigbtn.host{background:linear-gradient(120deg,#08d9d6,#7af9c6)}
+  .bigbtn:active{transform:translateY(2px)}
+  .home-note{margin-top:18px;color:var(--muted);font-size:13px;text-align:center;line-height:1.5}
+
+  /* ---------- GENERIC ---------- */
+  .row{display:flex;gap:10px;align-items:center}
+  .btn{background:var(--card);border:1px solid var(--line);color:var(--txt);
+    border-radius:12px;padding:12px 16px;font-weight:700;cursor:pointer;font-size:15px}
+  .btn:active{transform:scale(.97)}
+  .btn.accent{background:linear-gradient(120deg,#ff2e63,#ff6b9d);border:none;color:#fff}
+  .btn.cyan{background:linear-gradient(120deg,#08d9d6,#7af9c6);border:none;color:#06231f}
+  .btn.gold{background:linear-gradient(120deg,#ffd23f,#ffb13f);border:none;color:#2a1c00}
+  .btn.ghost{background:transparent}
+  .btn.block{width:100%;text-align:center}
+  .barback{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .barback .title{font-family:'Bebas Neue';font-size:26px;letter-spacing:1px}
+  .spacer{flex:1}
+
+  /* ---------- BINGO CARD ---------- */
+  .cardhead{text-align:center;margin:4px 0 12px}
+  .cardhead .t{font-size:34px;
+    background:linear-gradient(90deg,var(--accent),var(--gold),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .cardhead .id{color:var(--muted);font-size:12px;font-weight:700;letter-spacing:2px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+  .cell{position:relative;border-radius:12px;overflow:hidden;cursor:pointer;
+    background:var(--card2);border:1px solid var(--line);aspect-ratio:1/1;
+    display:flex;flex-direction:column;justify-content:flex-end}
+  .cell .art{position:absolute;inset:0;background-size:cover;background-position:center;
+    opacity:.9;transition:transform .2s}
+  .cell .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-family:'Bebas Neue';color:rgba(255,255,255,.85)}
+  .cell .cap{position:relative;z-index:2;padding:5px 5px;
+    background:linear-gradient(transparent,rgba(8,5,20,.92));}
+  .cell .cap .ti{font-size:10px;font-weight:800;line-height:1.05;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .cell .cap .ar{font-size:8px;color:var(--muted);font-weight:700;text-transform:uppercase;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell.marked .art{transform:scale(1.05);filter:saturate(1.2)}
+  .cell.marked::after{content:"✓";position:absolute;z-index:3;inset:0;display:flex;
+    align-items:center;justify-content:center;font-size:46px;font-weight:900;color:#fff;
+    background:rgba(61,220,132,.62);text-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .cell:active{transform:scale(.96)}
+
+  .counter{display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0 6px;
+    font-weight:800;color:var(--muted)}
+  .counter b{color:var(--gold);font-size:20px}
+  .cardfoot{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tip{color:var(--muted);font-size:12px;text-align:center;margin-top:12px;line-height:1.5}
+
+  /* ---------- HOST ---------- */
+  .now{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--line);
+    border-radius:20px;padding:18px;text-align:center;box-shadow:0 16px 40px rgba(0,0,0,.4)}
+  .now .cover{width:160px;height:160px;border-radius:16px;margin:6px auto 12px;
+    background-size:cover;background-position:center;display:flex;align-items:center;
+    justify-content:center;font-family:'Bebas Neue';font-size:40px;color:#fff;
+    box-shadow:0 12px 30px rgba(0,0,0,.45)}
+  .now .song{font-family:'Bebas Neue';font-size:36px;letter-spacing:.5px;line-height:1}
+  .now .artist{color:var(--accent2);font-weight:800;margin-top:4px;font-size:16px}
+  .now .meta{color:var(--muted);font-size:13px;margin-top:2px}
+  .now .progress{color:var(--muted);font-weight:800;letter-spacing:2px;font-size:12px;margin-bottom:6px}
+  .playrow{display:flex;gap:10px;margin-top:14px}
+  .playrow .btn{flex:1}
+  .navrow{display:flex;gap:10px;margin-top:10px}
+  .navrow .btn{flex:1}
+  .played{margin-top:18px}
+  .played h3{font-family:'Bebas Neue';font-size:22px;color:var(--muted);margin-bottom:8px}
+  .played ol{margin:0;padding:0;list-style:none;display:grid;gap:6px}
+  .played li{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:8px 12px;display:flex;gap:8px;align-items:center;font-size:14px}
+  .played li .n{color:var(--gold);font-weight:800;min-width:22px}
+  .played li .ar{color:var(--muted);margin-left:auto;font-size:12px}
+
+  /* ---------- SHARE / MODAL ---------- */
+  .modal{position:fixed;inset:0;background:rgba(5,3,15,.72);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;padding:22px;z-index:50}
+  .sheet{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--line);
+    border-radius:22px;padding:22px;max-width:380px;width:100%;text-align:center;
+    box-shadow:0 24px 60px rgba(0,0,0,.6)}
+  .sheet h2{font-size:30px;margin-bottom:6px}
+  .sheet p{color:var(--muted);font-size:13px;margin:6px 0 14px}
+  .qr{width:200px;height:200px;background:#fff;border-radius:14px;margin:0 auto 14px;
+    display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .qr img{width:100%;height:100%}
+  .linkbox{display:flex;gap:8px;margin-bottom:12px}
+  .linkbox input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:11px 12px;font-size:13px}
+  .field{text-align:left;margin-bottom:12px}
+  .field label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--txt);
+    border-radius:10px;padding:12px;font-size:15px}
+
+  /* ---------- WIN OVERLAY ---------- */
+  .win{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+    flex-direction:column;text-align:center;padding:24px;
+    background:radial-gradient(circle at 50% 40%,rgba(255,46,99,.35),rgba(5,3,15,.92))}
+  .win .b{font-family:'Bebas Neue';font-size:96px;line-height:.9;
+    background:linear-gradient(90deg,var(--gold),var(--accent),var(--accent2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:pop .5s ease}
+  .win .sub2{font-size:20px;font-weight:800;margin-top:8px}
+  @keyframes pop{0%{transform:scale(.3);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1)}}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:55;overflow:hidden}
+  .confetti i{position:absolute;top:-20px;width:9px;height:14px;opacity:.9;
+    animation:fall linear forwards}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+
+  .footer{text-align:center;color:var(--muted);font-size:11px;margin-top:26px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===== HEADER ===== -->
+  <div class="top">
+    <div class="brand">BINGO MUSICAL<small>ROCK &amp; ROLL · HITAZOS</small></div>
+    <button class="iconbtn" id="shareTop" title="Compartir">🔗</button>
+  </div>
+
+  <!-- ===== HOME ===== -->
+  <section id="home">
+    <div class="hero">
+      <div class="big">🎸🎶🥁</div>
+      <div class="sub">Cumpleaños de</div>
+      <div class="party" id="partyName">la fiesta</div>
+    </div>
+    <div class="home-actions">
+      <button class="bigbtn play" id="goPlay">
+        <span class="emoji">🎟️</span>
+        <span>Soy jugador/a<small>Tocá para tener tu cartón</small></span>
+      </button>
+      <button class="bigbtn host" id="goHost">
+        <span class="emoji">🎤</span>
+        <span>Soy el/la anfitrión/a<small>Reproducir las canciones</small></span>
+      </button>
+    </div>
+    <div class="home-note">
+      Cada teléfono genera su propio cartón.<br>
+      El anfitrión va poniendo canciones al azar y cada quien marca las que tiene.<br>
+      ¡Línea o cartón lleno = <b style="color:var(--gold)">BINGO!</b>
+    </div>
+    <button class="btn block ghost" id="shareHome" style="margin-top:18px">📲 Invitar / compartir link</button>
+  </section>
+
+  <!-- ===== PLAYER ===== -->
+  <section id="player" class="hidden">
+    <div class="barback">
+      <button class="btn ghost" id="playerBack">‹ Volver</button>
+      <div class="spacer"></div>
+      <button class="btn" id="newCard">♻️ Nuevo cartón</button>
+    </div>
+    <div class="cardhead">
+      <div class="t">MI CARTÓN</div>
+      <div class="id" id="cardId">#----</div>
+    </div>
+    <div class="grid" id="grid"></div>
+    <div class="counter">Marcadas <b id="markCount">0</b> / 16</div>
+    <div class="cardfoot">
+      <button class="btn gold block" id="checkBingo">🎉 ¡Canté BINGO!</button>
+      <button class="btn ghost block" id="clearMarks">Limpiar marcas</button>
+    </div>
+    <div class="tip">Tocá una tapa cuando suene esa canción para marcarla.<br>Tu cartón se guarda en este teléfono.</div>
+  </section>
+
+  <!-- ===== HOST ===== -->
+  <section id="host" class="hidden">
+    <div class="barback">
+      <button class="btn ghost" id="hostBack">‹ Volver</button>
+      <div class="spacer"></div>
+      <button class="btn" id="reshuffle">🔀 Mezclar de nuevo</button>
+    </div>
+    <div class="now">
+      <div class="progress" id="hostProgress">CANCIÓN 0 / 0</div>
+      <div class="cover" id="hostCover">🎵</div>
+      <div class="song" id="hostSong">Tocá “Empezar”</div>
+      <div class="artist" id="hostArtist">—</div>
+      <div class="meta" id="hostMeta"></div>
+      <div class="playrow">
+        <button class="btn" style="flex:1;background:linear-gradient(120deg,#1DB954,#1ed760);border:none;color:#06231f" id="hostSpotify">🎧 Spotify</button>
+        <button class="btn accent" id="hostPlay">▶ YouTube</button>
+      </div>
+      <div class="navrow">
+        <button class="btn ghost" id="hostPrev">‹ Anterior</button>
+        <button class="btn cyan" id="hostNext">Siguiente ›</button>
+      </div>
+    </div>
+    <div class="played">
+      <h3>Ya sonaron</h3>
+      <ol id="playedList"></ol>
+    </div>
+    <div class="tip">Conectá el teléfono al parlante. Tocá <b>Spotify</b> o <b>YouTube</b> y se abre con la canción exacta.<br>Cuando termine, volvé y tocá “Siguiente”.</div>
+  </section>
+
+  <div class="footer">🎂 Bingo Musical · hecho para festejar 🎸</div>
+</div>
+
+<!-- ===== SHARE MODAL ===== -->
+<div class="modal hidden" id="shareModal">
+  <div class="sheet">
+    <h2>📲 Invitá a la fiesta</h2>
+    <p>Que escaneen este código o pasales el link. Cada uno entra desde su teléfono.</p>
+    <div class="qr" id="qrBox"></div>
+    <div class="linkbox">
+      <input type="text" id="shareLink" readonly>
+      <button class="btn cyan" id="copyLink">Copiar</button>
+    </div>
+    <button class="btn accent block" id="shareNative" style="margin-bottom:8px">Compartir…</button>
+    <button class="btn ghost block" id="closeShare">Cerrar</button>
+  </div>
+</div>
+
+<!-- ===== SETTINGS MODAL (host name) ===== -->
+<div class="modal hidden" id="setModal">
+  <div class="sheet">
+    <h2>🎂 Nombre del festejo</h2>
+    <p>Aparece en la portada y en el link que compartís.</p>
+    <div class="field">
+      <label>¿De quién es el cumple?</label>
+      <input type="text" id="nameInput" placeholder="Ej: los 50 de Marce" maxlength="40">
+    </div>
+    <button class="btn gold block" id="saveName" style="margin-bottom:8px">Guardar</button>
+    <button class="btn ghost block" id="closeSet">Cancelar</button>
+  </div>
+</div>
+
+<div class="win hidden" id="winOverlay">
+  <div class="b">¡BINGO!</div>
+  <div class="sub2" id="winSub">Gritá fuerte 🎉</div>
+  <button class="btn gold" id="winClose" style="margin-top:22px">Seguir jugando</button>
+</div>
+<div class="confetti hidden" id="confetti"></div>
+
+<script>
+/* ============================================================
+   BINGO MUSICAL · Rock & Roll inglés
+   App autocontenida. Sin servidor.
+   ============================================================ */
+
+/* ---------- POOL DE CANCIONES (rock & roll inglés) ---------- */
+const SONGS = [
+  // The Beatles
+  {t:"Hey Jude", a:"The Beatles", y:1968, g:"beatles"},
+  {t:"Come Together", a:"The Beatles", y:1969, g:"beatles"},
+  {t:"Let It Be", a:"The Beatles", y:1970, g:"beatles"},
+  {t:"Twist and Shout", a:"The Beatles", y:1963, g:"beatles"},
+  {t:"Here Comes the Sun", a:"The Beatles", y:1969, g:"beatles"},
+  {t:"Help!", a:"The Beatles", y:1965, g:"beatles"},
+  // AC/DC
+  {t:"Highway to Hell", a:"AC/DC", y:1979, g:"acdc"},
+  {t:"Thunderstruck", a:"AC/DC", y:1990, g:"acdc"},
+  {t:"Back in Black", a:"AC/DC", y:1980, g:"acdc"},
+  {t:"T.N.T.", a:"AC/DC", y:1975, g:"acdc"},
+  {t:"You Shook Me All Night Long", a:"AC/DC", y:1980, g:"acdc"},
+  // Aerosmith
+  {t:"I Don't Want to Miss a Thing", a:"Aerosmith", y:1998, g:"aero"},
+  {t:"Dream On", a:"Aerosmith", y:1973, g:"aero"},
+  {t:"Walk This Way", a:"Aerosmith", y:1975, g:"aero"},
+  {t:"Crazy", a:"Aerosmith", y:1993, g:"aero"},
+  {t:"Cryin'", a:"Aerosmith", y:1993, g:"aero"},
+  // Black Eyed Peas
+  {t:"I Gotta Feeling", a:"Black Eyed Peas", y:2009, g:"bep"},
+  {t:"Boom Boom Pow", a:"Black Eyed Peas", y:2009, g:"bep"},
+  {t:"Where Is the Love?", a:"Black Eyed Peas", y:2003, g:"bep"},
+  {t:"Pump It", a:"Black Eyed Peas", y:2006, g:"bep"},
+  {t:"Let's Get It Started", a:"Black Eyed Peas", y:2004, g:"bep"},
+  // Clásicos del rock
+  {t:"Bohemian Rhapsody", a:"Queen", y:1975, g:"queen"},
+  {t:"We Will Rock You", a:"Queen", y:1977, g:"queen"},
+  {t:"Don't Stop Me Now", a:"Queen", y:1978, g:"queen"},
+  {t:"We Are the Champions", a:"Queen", y:1977, g:"queen"},
+  {t:"(I Can't Get No) Satisfaction", a:"The Rolling Stones", y:1965, g:"rock"},
+  {t:"Paint It Black", a:"The Rolling Stones", y:1966, g:"rock"},
+  {t:"Sweet Child O' Mine", a:"Guns N' Roses", y:1987, g:"rock"},
+  {t:"November Rain", a:"Guns N' Roses", y:1991, g:"rock"},
+  {t:"Livin' on a Prayer", a:"Bon Jovi", y:1986, g:"rock"},
+  {t:"Eye of the Tiger", a:"Survivor", y:1982, g:"rock"},
+  {t:"Smells Like Teen Spirit", a:"Nirvana", y:1991, g:"rock"},
+  {t:"Smoke on the Water", a:"Deep Purple", y:1972, g:"rock"},
+  {t:"Jailhouse Rock", a:"Elvis Presley", y:1957, g:"rock"},
+  {t:"Every Breath You Take", a:"The Police", y:1983, g:"rock"},
+  {t:"Whole Lotta Love", a:"Led Zeppelin", y:1969, g:"rock"},
+];
+
+const GRAD = {
+  beatles:["#f7971e","#ffd200"], acdc:["#cb2d3e","#ef473a"],
+  aero:["#8e2de2","#4a00e0"], bep:["#11998e","#38ef7d"],
+  queen:["#5f2c82","#49a09d"], rock:["#373b44","#4286f8"],
+};
+const CARD_SIZE = 16;
+const ART_CACHE = {}; // memoria de portadas iTunes (por sesión)
+
+/* ---------- UTILIDADES ---------- */
+function mulberry32(seed){
+  return function(){
+    seed|=0; seed=seed+0x6D2B79F5|0;
+    let t=Math.imul(seed^seed>>>15,1|seed);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function seededShuffle(arr, rnd){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(rnd()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function songKey(s){return s.a+" "+s.t;}
+function ytSearchUrl(s){
+  return "https://www.youtube.com/results?search_query="+encodeURIComponent(s.a+" "+s.t+" official");
+}
+function spotifySearchUrl(s){
+  return "https://open.spotify.com/search/"+encodeURIComponent(s.a+" "+s.t);
+}
+function grad(g){const c=GRAD[g]||GRAD.rock;return `linear-gradient(150deg,${c[0]},${c[1]})`;}
+function initials(s){return s.t.replace(/[^A-Za-z0-9 ]/g,"").trim().slice(0,2).toUpperCase()||"♪";}
+
+/* Portada real desde iTunes (corre en el teléfono, con respaldo) */
+function loadArt(s, cb){
+  const key=songKey(s);
+  if(ART_CACHE[key]!==undefined){cb(ART_CACHE[key]);return;}
+  const stored=localStorage.getItem("art:"+key);
+  if(stored!==null){ART_CACHE[key]=stored||"";cb(ART_CACHE[key]);return;}
+  const url="https://itunes.apple.com/search?term="+encodeURIComponent(s.a+" "+s.t)+"&entity=song&limit=1";
+  fetch(url).then(r=>r.json()).then(d=>{
+    let art="";
+    if(d.results&&d.results[0]&&d.results[0].artworkUrl100){
+      art=d.results[0].artworkUrl100.replace("100x100","400x400");
+    }
+    ART_CACHE[key]=art;
+    try{localStorage.setItem("art:"+key,art);}catch(e){}
+    cb(art);
+  }).catch(()=>{ART_CACHE[key]="";cb("");});
+}
+
+/* ---------- ESTADO / PARÁMETROS ---------- */
+function getParams(){
+  const p=new URLSearchParams(location.hash.replace(/^#/,""));
+  return p;
+}
+function setParams(obj){
+  const p=getParams();
+  Object.keys(obj).forEach(k=>{obj[k]==null?p.delete(k):p.set(k,obj[k]);});
+  history.replaceState(null,"","#"+p.toString());
+}
+function getName(){
+  return getParams().get("name") || localStorage.getItem("bm_name") || "la fiesta";
+}
+function setName(n){
+  localStorage.setItem("bm_name",n);
+  setParams({name:n});
+  renderName();
+}
+function renderName(){document.getElementById("partyName").textContent=getName();}
+
+/* ---------- NAVEGACIÓN ---------- */
+const views={home:"home",player:"player",host:"host"};
+function show(view){
+  ["home","player","host"].forEach(v=>{
+    document.getElementById(v).classList.toggle("hidden",v!==view);
+  });
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   JUGADOR · CARTÓN
+   ============================================================ */
+let cardSeed=null, cardSongs=[], marked=[];
+
+function ensureSeed(){
+  let s=getParams().get("seed");
+  if(!s){
+    s=Math.floor(Math.random()*1e9).toString(36);
+    setParams({seed:s});
+  }
+  return s;
+}
+function seedToInt(str){
+  let h=2166136261;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619);}
+  return h>>>0;
+}
+function buildCard(seedStr){
+  cardSeed=seedStr;
+  const rnd=mulberry32(seedToInt(seedStr));
+  cardSongs=seededShuffle(SONGS,rnd).slice(0,CARD_SIZE);
+  // marcas guardadas por seed
+  const saved=localStorage.getItem("marks:"+seedStr);
+  marked=saved?JSON.parse(saved):new Array(CARD_SIZE).fill(false);
+  document.getElementById("cardId").textContent="#"+seedStr.toUpperCase();
+  renderGrid();
+}
+function saveMarks(){localStorage.setItem("marks:"+cardSeed,JSON.stringify(marked));}
+function renderGrid(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+  cardSongs.forEach((s,i)=>{
+    const cell=document.createElement("div");
+    cell.className="cell"+(marked[i]?" marked":"");
+    cell.innerHTML=`
+      <div class="ph" style="background:${grad(s.g)}">${initials(s)}</div>
+      <div class="art" data-i="${i}"></div>
+      <div class="cap"><div class="ti">${s.t}</div><div class="ar">${s.a}</div></div>`;
+    cell.addEventListener("click",()=>toggleMark(i));
+    grid.appendChild(cell);
+    loadArt(s,(art)=>{
+      if(art){const el=cell.querySelector(".art");el.style.backgroundImage=`url(${art})`;}
+    });
+  });
+  updateCount();
+}
+function toggleMark(i){
+  marked[i]=!marked[i];
+  saveMarks();
+  const cell=document.getElementById("grid").children[i];
+  cell.classList.toggle("marked",marked[i]);
+  updateCount();
+  if(checkLines()||marked.every(Boolean)) celebrate(marked.every(Boolean)?"¡CARTÓN LLENO!":"¡Línea!");
+}
+function updateCount(){
+  document.getElementById("markCount").textContent=marked.filter(Boolean).length;
+}
+function checkLines(){
+  const idx=(r,c)=>r*4+c;
+  for(let r=0;r<4;r++){let ok=true;for(let c=0;c<4;c++)ok=ok&&marked[idx(r,c)];if(ok)return true;}
+  for(let c=0;c<4;c++){let ok=true;for(let r=0;r<4;r++)ok=ok&&marked[idx(r,c)];if(ok)return true;}
+  let d1=true,d2=true;
+  for(let i=0;i<4;i++){d1=d1&&marked[idx(i,i)];d2=d2&&marked[idx(i,3-i)];}
+  return d1||d2;
+}
+
+/* ---------- celebración ---------- */
+function celebrate(text){
+  document.getElementById("winSub").textContent=text;
+  document.getElementById("winOverlay").classList.remove("hidden");
+  fireConfetti();
+}
+function fireConfetti(){
+  const box=document.getElementById("confetti");
+  box.classList.remove("hidden");box.innerHTML="";
+  const cols=["#ff2e63","#08d9d6","#ffd23f","#3ddc84","#ff6b9d","#7af9c6"];
+  for(let i=0;i<90;i++){
+    const c=document.createElement("i");
+    c.style.left=Math.random()*100+"vw";
+    c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(2+Math.random()*2.5)+"s";
+    c.style.animationDelay=(Math.random()*.6)+"s";
+    c.style.transform=`rotate(${Math.random()*360}deg)`;
+    box.appendChild(c);
+  }
+  setTimeout(()=>box.classList.add("hidden"),4200);
+}
+
+/* ============================================================
+   ANFITRIÓN · LISTA DE REPRODUCCIÓN
+   ============================================================ */
+let hostOrder=[], hostIdx=-1, hostSeed=null;
+
+function buildHostOrder(seedStr){
+  hostSeed=seedStr;
+  const rnd=mulberry32(seedToInt(seedStr));
+  hostOrder=seededShuffle(SONGS,rnd);
+  const savedIdx=localStorage.getItem("hostIdx:"+seedStr);
+  hostIdx=savedIdx?parseInt(savedIdx,10):-1;
+  renderHost();
+}
+function saveHostIdx(){localStorage.setItem("hostIdx:"+hostSeed,String(hostIdx));}
+function renderHost(){
+  const total=hostOrder.length;
+  const cur=hostIdx>=0?hostOrder[hostIdx]:null;
+  document.getElementById("hostProgress").textContent=
+    "CANCIÓN "+(hostIdx+1)+" / "+total;
+  const cover=document.getElementById("hostCover");
+  if(cur){
+    document.getElementById("hostSong").textContent=cur.t;
+    document.getElementById("hostArtist").textContent=cur.a;
+    document.getElementById("hostMeta").textContent=cur.y?("· "+cur.y+" ·"):"";
+    cover.textContent="";
+    cover.style.background=grad(cur.g);
+    cover.style.backgroundSize="cover";
+    loadArt(cur,(art)=>{if(art&&cur===hostOrder[hostIdx]){cover.style.backgroundImage=`url(${art})`;}else{cover.textContent=initials(cur);}});
+  }else{
+    document.getElementById("hostSong").textContent="Tocá “Siguiente”";
+    document.getElementById("hostArtist").textContent="—";
+    document.getElementById("hostMeta").textContent="";
+    cover.style.backgroundImage="";cover.style.background=grad("rock");cover.textContent="🎵";
+  }
+  // lista de reproducidas (de la más reciente arriba)
+  const ol=document.getElementById("playedList");
+  ol.innerHTML="";
+  for(let i=hostIdx;i>=0;i--){
+    const s=hostOrder[i];
+    const li=document.createElement("li");
+    li.innerHTML=`<span class="n">${i+1}</span><span>${s.t}</span><span class="ar">${s.a}</span>`;
+    ol.appendChild(li);
+  }
+}
+function hostNext(){
+  if(hostIdx<hostOrder.length-1){hostIdx++;saveHostIdx();renderHost();}
+}
+function hostPrev(){
+  if(hostIdx>0){hostIdx--;saveHostIdx();renderHost();}
+  else if(hostIdx===0){hostIdx=-1;saveHostIdx();renderHost();}
+}
+function hostPlayCurrent(where){
+  if(hostIdx<0)hostNext();
+  const cur=hostOrder[hostIdx];
+  if(!cur)return;
+  const url=(where==="spotify")?spotifySearchUrl(cur):ytSearchUrl(cur);
+  window.open(url,"_blank","noopener");
+}
+
+/* ============================================================
+   COMPARTIR
+   ============================================================ */
+function baseUrl(){
+  return location.origin+location.pathname;
+}
+function shareUrl(){
+  const p=new URLSearchParams();
+  const n=getName();
+  if(n&&n!=="la fiesta")p.set("name",n);
+  const h=p.toString();
+  return baseUrl()+(h?("#"+h):"");
+}
+function openShare(){
+  const url=shareUrl();
+  document.getElementById("shareLink").value=url;
+  const qr=document.getElementById("qrBox");
+  qr.innerHTML="";
+  const img=new Image();
+  img.onerror=()=>{qr.innerHTML='<div style="color:#333;font-size:12px;padding:10px;text-align:center">Copiá el link de abajo 👇</div>';};
+  img.src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=8&data="+encodeURIComponent(url);
+  qr.appendChild(img);
+  document.getElementById("shareModal").classList.remove("hidden");
+}
+
+/* ============================================================
+   WIRING
+   ============================================================ */
+document.addEventListener("DOMContentLoaded",()=>{
+  renderName();
+
+  // Home
+  document.getElementById("goPlay").addEventListener("click",()=>{
+    const s=ensureSeed();setParams({role:"play"});buildCard(s);show("player");
+  });
+  document.getElementById("goHost").addEventListener("click",()=>{
+    let s=getParams().get("hseed");
+    if(!s){s="fiesta";setParams({hseed:s});}
+    setParams({role:"host"});buildHostOrder(s);show("host");
+  });
+
+  // Player
+  document.getElementById("playerBack").addEventListener("click",()=>{setParams({role:null});show("home");});
+  document.getElementById("newCard").addEventListener("click",()=>{
+    const s=Math.floor(Math.random()*1e9).toString(36);
+    setParams({seed:s});buildCard(s);
+  });
+  document.getElementById("clearMarks").addEventListener("click",()=>{
+    marked=new Array(CARD_SIZE).fill(false);saveMarks();renderGrid();
+  });
+  document.getElementById("checkBingo").addEventListener("click",()=>{
+    if(marked.every(Boolean))celebrate("¡CARTÓN LLENO!");
+    else if(checkLines())celebrate("¡Línea!");
+    else celebrate("¡Bingo cantado! 🎤");
+  });
+
+  // Host
+  document.getElementById("hostBack").addEventListener("click",()=>{setParams({role:null});show("home");});
+  document.getElementById("hostNext").addEventListener("click",hostNext);
+  document.getElementById("hostPrev").addEventListener("click",hostPrev);
+  document.getElementById("hostPlay").addEventListener("click",()=>hostPlayCurrent("youtube"));
+  document.getElementById("hostSpotify").addEventListener("click",()=>hostPlayCurrent("spotify"));
+  document.getElementById("reshuffle").addEventListener("click",()=>{
+    const s=Math.floor(Math.random()*1e9).toString(36);
+    setParams({hseed:s});buildHostOrder(s);
+  });
+
+  // Share
+  document.getElementById("shareTop").addEventListener("click",openShare);
+  document.getElementById("shareHome").addEventListener("click",openShare);
+  document.getElementById("closeShare").addEventListener("click",()=>document.getElementById("shareModal").classList.add("hidden"));
+  document.getElementById("copyLink").addEventListener("click",()=>{
+    const inp=document.getElementById("shareLink");inp.select();
+    navigator.clipboard?.writeText(inp.value);
+    const b=document.getElementById("copyLink");b.textContent="¡Copiado!";setTimeout(()=>b.textContent="Copiar",1500);
+  });
+  document.getElementById("shareNative").addEventListener("click",()=>{
+    const url=shareUrl();
+    if(navigator.share)navigator.share({title:"Bingo Musical 🎸",text:"¡Sumate al Bingo Musical de "+getName()+"!",url});
+    else openShare();
+  });
+
+  // Settings (nombre del festejo) — abrir tocando el nombre
+  document.getElementById("partyName").addEventListener("click",()=>{
+    document.getElementById("nameInput").value=(getName()==="la fiesta"?"":getName());
+    document.getElementById("setModal").classList.remove("hidden");
+  });
+  document.getElementById("saveName").addEventListener("click",()=>{
+    const v=document.getElementById("nameInput").value.trim();
+    setName(v||"la fiesta");
+    document.getElementById("setModal").classList.add("hidden");
+  });
+  document.getElementById("closeSet").addEventListener("click",()=>document.getElementById("setModal").classList.add("hidden"));
+
+  // Win
+  document.getElementById("winClose").addEventListener("click",()=>document.getElementById("winOverlay").classList.add("hidden"));
+
+  // Restaurar vista según hash (link compartido)
+  const role=getParams().get("role");
+  if(role==="play"){buildCard(ensureSeed());show("player");}
+  else if(role==="host"){let s=getParams().get("hseed")||"fiesta";buildHostOrder(s);show("host");}
+  else show("home");
+});
+</script>
+</body>
+</html>
